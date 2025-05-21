@@ -1,0 +1,13 @@
+id;name;color;format;is_fruit
+1;apple;red;circle;1
+2;orange;orange;circle;1
+3;blueberry;blue;circle;1
+4;banana;yellow;curved;1
+5;pear;green;oval;-1
+6;orange;blue;circle;-1
+7;apple;blue;circle;-1
+8;banana;red;curved;-1
+9;apple;green;circle;1
+10;banana;blue;curved;-1
+11;pear;blue;oval;1
+12;pear;yellow;oval;1
