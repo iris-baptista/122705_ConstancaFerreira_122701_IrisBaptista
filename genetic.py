@@ -36,10 +36,12 @@ def onePointCrossOver(p1, p2, ff): #devolve um filho!
 
     return child 
 
-def mutate(): 
-    #escolhe um grupo consecutivo 
-    #faz scramble aos valores 
-    pass
+def mutate(child): #mutate um bit
+    index= random.randint(0, len(child)-1) #escolhe um index 
+    novoValor= random.uniform(-1, 1) #gera um novo valor? Ou devia manipular o antigo???
+    
+    child[index]= novoValor
+    return child
 
 def sortPop(pop, ff):
     for i in range(0, len(pop)-1):
