@@ -60,7 +60,7 @@ def load_train_dataset(filename):
 
 def train_fruit_classifier(filename):
     f, X, y = load_train_dataset(filename)
-    dt = train_decision_tree(X, y)
+    dt = train_decision_tree(X, y, f)
     return lambda item: dt.predict(item) 
 
 
