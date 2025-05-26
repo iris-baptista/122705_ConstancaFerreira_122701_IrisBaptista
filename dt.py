@@ -4,6 +4,8 @@ class DecisionTree:
 
     def __init__(self, X, y, threshold=1.0, max_depth=None): # Additional optional arguments can be added, but the default value needs to be provided
         # Implement this
+        #X - database
+        #y - is_fruit
         pass
 
     def predict(self, x): # (e.g. x = ['apple', 'green', 'circle'] -> 1 or -1)
