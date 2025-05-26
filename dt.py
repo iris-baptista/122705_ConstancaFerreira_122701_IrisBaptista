@@ -25,8 +25,26 @@ class DecisionNode():
         self.saidaM= node
         self.conditionM= condition
 
+    def addConditionsLeft(self, conditions):
+        for c in conditions:
+            self.conditionL.append(c)
+    
+    def addConditionsRight(self, conditions):
+        for c in conditions:
+            self.conditionR.append(c)
+
+    def addConditionsMiddle(self, conditions):
+        for c in conditions:
+            self.conditionM.append(c)
+
     def getAtributeIndex(self):
         return self.atribute
+    
+    def getLeft(self):
+        return self.saidaL
+    
+    def getMiddle(self):
+        return self.saidaM
     
     def getSaida(self, valor):
         if valor in self.conditionL:
@@ -107,9 +125,31 @@ class DecisionTree:
             if(chave not in toRemove):
                 resto.append(chave)
 
-        #AQUI E Q FAZ O THRESHOLD OU CUTOFF?
-        #vai criar uma arvore q vai usar a folha deste como raiz
-        self.root.setRight(DecisionTree(X, y, atributes).getRoot(), resto) 
+        #check condicoes de paragem 
+        if(len(atributes) == 0 or thresholdReached(y, threshold)): #se nao ha proximo atribute ou se ja antigio o threshold 
+            divisoes= spreadValues(entropias, resto) 
+
+            labelLeft= self.root.getLeft().getLabel()
+            mid= self.root.getMiddle()
+
+            if(labelLeft == 1):
+                self.root.addConditionsLeft(divisoes[0])
+
+                #mid tem de ter label -1
+                if(mid == None):
+                    self.root.setMiddle(ConclusionNode(-1), divisoes[1])
+                else: 
+                    self.root.addConditionsMiddle(divisoes[1])
+            else: #se for -1
+                self.root.addConditionsLeft(divisoes[1])
+
+                #mid tem de ter label 1
+                if(mid == None):
+                    self.root.setMiddle(ConclusionNode(1), divisoes[0])
+                else: 
+                    self.root.addConditionsMiddle(divisoes[0])
+        else: #vai criar uma arvore q vai usar a folha deste como raiz
+            self.root.setRight(DecisionTree(X, y, atributes).getRoot(), resto) 
     
     #x e um objeto novo para classificarmos 
     def predict(self, x): # (e.g. x = ['apple', 'green', 'circle'] -> 1 or -1)
@@ -160,10 +200,10 @@ def entropia(numeroOcorrencias):
     e= -((probFruta*logFruta) + (probNaoFruta*logNaoFruta))
 
     label= 1
-    if(numeroOcorrencias[1] > numeroOcorrencias[0]): #se temos mais nFruta essa fica a label
-        label= -1
+    if(numeroOcorrencias[1] >= numeroOcorrencias[0]): #se temos mais ou o mesmo nFruta essa fica a label
+        label= -1 #melhor classificar uma fruta como bomba do q uma bomba como fruta
 
-    return [round(e, 3), total, label]
+    return [round(e, 3), total, label] #devolve o valor da entropia, o numero de frutas na subset, e a label atribuida 
 
 def entropiaInitial(labels):
     fruta= 0
@@ -225,6 +265,35 @@ def newDataset(f, oldX, oldY, toRemove, atributeIndex): #calcular nova subset, a
         newY.pop(p)
 
     return [f, newX, newY]
+
+def thresholdReached(labels, threshold):
+    fruit= 0
+    nFruit= 0
+
+    for l in labels:
+        if(l == 1):
+            fruit+= 1
+        else:
+            nFruit+= 1
+    
+    total= fruit+nFruit
+
+    if(fruit/total >= threshold or nFruit/total >= threshold): #se antigio o threshold
+        return True
+    else:
+        return False
+
+def spreadValues(entropias, resto):
+    divisoes= [[], []]
+
+    for chave, valor in entropias.items():
+        if(chave in resto):
+            if(valor[2] == 1): #se label for 1
+                divisoes[0].append(chave)
+            else: #se a label for -1
+                divisoes[1].append(chave)
+
+    return divisoes #[1, -1]
 
 def train_decision_tree(X, y, a):
     # Replace with your configuration

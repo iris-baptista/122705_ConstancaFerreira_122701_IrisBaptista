@@ -116,6 +116,24 @@ def newDataset(f, oldX, oldY, toRemove, atributeIndex): #calcular nova subset, a
 
     return [f, newX, newY]
 
+def checkThresholdOld(restos, threshold):
+    fruit= 0
+    nFruit= 0
+
+    total= fruit+nFruit
+
+    hit= False
+    label= 0
+    if(fruit/total >= threshold or nFruit/total >= threshold): #se antigio o threshold
+        hit= True
+
+        if(nFruit >= fruit): #se for igual vamos classificar como nao fruta para nao ariscar cair numa bomba 
+            label= -1
+        else:
+            label= 1
+
+    return [hit, label]
+
 #main
 f, X, y = load_train_dataset("train.csv")
 
@@ -181,6 +199,15 @@ def main(f, X, y):
     root.setRight(main(f, X, y), resto) #isto nao tem a root por isso acho q nao da para percorrer, mas eu so quero ver a condicao de paragem 
     
 main(f, X, y)
+
+#threshold 
+# t= checkThreshold(resto)
+# if(t):
+#     pass
+#     #spread(resto)
+#     #self.root.setRight(ConclusionNode(t[1]), resto)
+# else:
+#     
 
 #["orange", "blueberry", "banana"], 0
 #["orange", "yellow"], 1
