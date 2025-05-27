@@ -70,7 +70,7 @@ class DecisionTree:
     #fazemos os branches 
     #usa a entropia e a ig 
     #deve ter recursao (da para fazer mesmo sendo um construtor)
-    def __init__(self, X, y, atributes, threshold=1.0, max_depth=None): 
+    def __init__(self, X, y, atributes, threshold=1.0, max_depth=50): 
         entropiaDataset= entropiaInitial(y)
         biggestIG= [-1, None, None] #initializar para substituir 
         for aIndex in range(0, len(atributes)): #calcular todas as tabelas 
@@ -126,7 +126,7 @@ class DecisionTree:
                 resto.append(chave)
 
         #check condicoes de paragem 
-        if(len(atributes) == 0 or thresholdReached(y, threshold)): #se nao ha proximo atribute ou se ja antigio o threshold 
+        if(len(atributes) == 0 or thresholdReached(y, threshold) or max_depth-1 == 0): #se nao ha proximo atribute ou se ja antigio o threshold 
             divisoes= spreadValues(entropias, resto) 
 
             labelLeft= self.root.getLeft().getLabel()
@@ -149,7 +149,7 @@ class DecisionTree:
                 else: 
                     self.root.addConditionsMiddle(divisoes[0])
         else: #vai criar uma arvore q vai usar a folha deste como raiz
-            self.root.setRight(DecisionTree(X, y, atributes).getRoot(), resto) 
+            self.root.setRight(DecisionTree(X, y, atributes, threshold, max_depth-1).getRoot(), resto) 
     
     #x e um objeto novo para classificarmos 
     def predict(self, x): # (e.g. x = ['apple', 'green', 'circle'] -> 1 or -1)
@@ -296,6 +296,7 @@ def spreadValues(entropias, resto):
     return divisoes #[1, -1]
 
 def train_decision_tree(X, y, a):
-    # Replace with your configuration
-    #qual configuracao?
-    return DecisionTree(X, y, a)
+    threshold= 0.75
+    max_depth= 50
+
+    return DecisionTree(X, y, a, threshold, max_depth)

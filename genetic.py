@@ -38,9 +38,21 @@ def onePointCrossOver(p1, p2, ff): #devolve um filho!
 
 def mutate(child): #mutate um bit
     index= random.randint(0, len(child)-1) #escolhe um index 
-    novoValor= random.uniform(-1, 1) #gera um novo valor? Ou devia manipular o antigo???
+    valorAntigo= child[index]
+
+    alteracao= random.uniform(0, 1) #gera um novo valor? Ou devia manipular o antigo???
+    if(valorAntigo > 0):
+        novoValor= valorAntigo - alteracao
+    else:
+        novoValor= valorAntigo + alteracao
+
+    if(novoValor > 1):
+        child[index]= 1
+    elif(novoValor < -1):
+        child[index]= -1
+    else:
+        child[index]= novoValor
     
-    child[index]= novoValor
     return child
 
 def sortPop(pop, ff):
