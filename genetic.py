@@ -72,6 +72,7 @@ def sortPop(pop, ff):
 
 #double check parameters in main code broskie 
 def genetic_algorithm(individual_size, population_size, fitness_function, target_fitness, generations, elite_rate=0.2, mutation_rate=0.05):
+    print("TIME TO START")
     population = generate_population(individual_size, population_size) #population initial
     best_individual = (None, 0) #initializar population
     

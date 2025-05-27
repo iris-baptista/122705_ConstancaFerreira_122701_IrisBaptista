@@ -74,7 +74,7 @@ def main():
     args = parser.parse_args()
 
     if args.train:
-        train_ai_player(args.file, args.population, args.generations)
+        train_ai_player(args.file, args.population, args.generations) #estamos aqui 
         exit()
 
 
