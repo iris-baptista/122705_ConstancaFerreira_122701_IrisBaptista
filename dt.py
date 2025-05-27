@@ -109,10 +109,10 @@ class DecisionTree:
             else: #se a conclusao nao e 1, tem de ser -1
                 self.root.setLeft(ConclusionNode(-1), nFruit)
         else: #se temos 0 casos de entropia ser 0 (so adicionamos )
-            smallestE= [100, None]
+            smallestE= [100, None, None]
             for chave, valor in biggestIG[2].items(): #iterar sobre as entropias 
-                if(valor[0] < smallestE):
-                    smallestE= [valor[0], chave]
+                if(valor[0] < smallestE[0]):
+                    smallestE= [valor[0], chave, valor[2]]
 
             toRemove= smallestE[1]
             self.root.setLeft(ConclusionNode(smallestE[2]), smallestE[1]) #adicionar o no de conclusion

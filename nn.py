@@ -17,6 +17,10 @@ class NeuralNetwork:
         for n in self.hidden_architecture:
             numWeights = numWeights + (input_size + 1) * n
             input_size = n
+
+        #output das camadas totais, para um único output
+        numWeights = numWeights + (input_size + 1)
+
         return numWeights
 
     def load_weights(self, weights):
@@ -48,7 +52,7 @@ class NeuralNetwork:
 
 def create_network_architecture(input_size):
     #hidden_architecture = (1) perceptrão simples
-    hidden_architecture = (input_size // 2) #feedforward network, com uma camada escondida
+    hidden_architecture = (input_size // 2, 2) #feedforward network, com uma camada escondida
 
     hidden_fn = lambda x: 1 / (1 + np.exp(-x))
     output_fn = lambda x: 1 if x > 0 else -1

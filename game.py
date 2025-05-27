@@ -175,6 +175,8 @@ def play(player=human_player, classifier=None, draw=True, fruit_limit=100):
         state = extract_state(basket, items, classifier)
 
         selected_play = player(state)
+        print("seletced play :")
+        print(selected_play)
         if selected_play == -1:
             basket.x = max(0, basket.x - basket.vel)
         elif selected_play == 1:
