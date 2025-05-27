@@ -47,7 +47,9 @@ class NeuralNetwork:
         return output
 
 def create_network_architecture(input_size):
+    #hidden_architecture = (1) perceptrão simples
+    hidden_architecture = (input_size // 2) #feedforward network, com uma camada escondida
 
     hidden_fn = lambda x: 1 / (1 + np.exp(-x))
     output_fn = lambda x: 1 if x > 0 else -1
-    return NeuralNetwork(input_size, (), hidden_fn, output_fn)
+    return NeuralNetwork(input_size, hidden_architecture, hidden_fn, output_fn)
