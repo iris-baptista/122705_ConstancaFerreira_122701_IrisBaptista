@@ -6,7 +6,6 @@ import random
 import csv
 import numpy as np
 
-
 pygame.init()
 
 #COLORS
