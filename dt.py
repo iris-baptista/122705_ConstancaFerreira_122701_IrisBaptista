@@ -45,14 +45,14 @@ class DecisionNode():
     
     def getMiddle(self):
         return self.saidaM
-    
+        
     def getSaida(self, valor):
         if valor in self.conditionL:
             return self.saidaL
         elif valor in self.conditionR:
             return self.saidaR
         elif valor in self.conditionM:
-            return self.conditionM
+            return self.saidaM
         else:
             print("Not a valid value for the atribute being used!")
 
@@ -63,13 +63,13 @@ class ConclusionNode():
     def getLabel(self):
         return self.label
     
-################################Class Principal################################
+################################ Class Principal ################################
 class DecisionTree:
     root= None
 
     #fazemos os branches 
     #usa a entropia e a ig 
-    #deve ter recursao
+    #deve ter recursao (da para fazer mesmo sendo um construtor)
     def __init__(self, X, y, atributes, threshold=1.0, max_depth=50): 
         entropiaDataset= entropiaInitial(y)
         biggestIG= [-1, None, None] #initializar para substituir 
@@ -83,8 +83,9 @@ class DecisionTree:
             currentIG= [ig(entropiaDataset, entropias), aIndex, entropias]
             if(currentIG[0] > biggestIG[0]):
                 biggestIG= currentIG
-            
+
         self.root= DecisionNode(biggestIG[1])
+        #print("Root")
         zeros= countZeros(biggestIG[2]) 
 
         if(len(zeros) >= 1): #se temos mais q 1 zero
@@ -103,11 +104,14 @@ class DecisionTree:
             #vamos ter ou 1 ou 2 folhas
             if(len(fruit) > 0):
                 self.root.setLeft(ConclusionNode(1), fruit)
+                #print("Left is fruit with conditions ", fruit)
                 
                 if(len(nFruit) > 0): #se tb tem uma segunda folha para -1
                     self.root.setMiddle(ConclusionNode(-1), nFruit)
+                    #print("Middle is not fruit with conditions ", nFruit)
             else: #se a conclusao nao e 1, tem de ser -1
                 self.root.setLeft(ConclusionNode(-1), nFruit)
+                #print("Left is not fruit with conditions ", nFruit)
         else: #se temos 0 casos de entropia ser 0 (so adicionamos )
             smallestE= [100, None, None]
             for chave, valor in biggestIG[2].items(): #iterar sobre as entropias 
@@ -115,10 +119,11 @@ class DecisionTree:
                     smallestE= [valor[0], chave, valor[2]]
 
             toRemove= smallestE[1]
+            #print("Left is fruit= ", smallestE[2], " para ", smallestE[1])
             self.root.setLeft(ConclusionNode(smallestE[2]), smallestE[1]) #adicionar o no de conclusion
 
         #passa variaveis por (object) reference entao altera o valor de atributes, X, e y permanentemente
-        newDataset(atributes, X, y, toRemove, biggestIG[1])
+        atributes, X, y= newDataset(atributes, X, y, toRemove, biggestIG[1])
 
         resto= []
         for chave in biggestIG[2]:
@@ -133,39 +138,46 @@ class DecisionTree:
             mid= self.root.getMiddle()
 
             if(labelLeft == 1):
+                #print("added to left ", divisoes[0])
                 self.root.addConditionsLeft(divisoes[0])
 
                 #mid tem de ter label -1
                 if(mid == None):
+                    #print("set to middle ", divisoes[1], " with -1")
                     self.root.setMiddle(ConclusionNode(-1), divisoes[1])
                 else: 
+                    #print("added to middle ", divisoes[1])
                     self.root.addConditionsMiddle(divisoes[1])
             else: #se for -1
+                #print("added to left ", divisoes[1])
                 self.root.addConditionsLeft(divisoes[1])
 
                 #mid tem de ter label 1
                 if(mid == None):
+                    #print("set to middle ", divisoes[0], " with 1")
                     self.root.setMiddle(ConclusionNode(1), divisoes[0])
                 else: 
+                    #print("added to middle ", divisoes[0])
                     self.root.addConditionsMiddle(divisoes[0])
         else: #vai criar uma arvore q vai usar a folha deste como raiz
+            #print("resto ", resto)
             self.root.setRight(DecisionTree(X, y, atributes, threshold, max_depth-1).getRoot(), resto) 
     
     #x e um objeto novo para classificarmos 
     def predict(self, x): # (e.g. x = ['apple', 'green', 'circle'] -> 1 or -1)
         nextNode= self.root
         while(nextNode.__class__ != ConclusionNode):
-            index= nextNode.getAtributeIndex
+            index= nextNode.getAtributeIndex()
             value= x.pop(index) #pop para os proximos indexes ficarem corretos 
-
+            
             nextNode= nextNode.getSaida(value)
-
+            
         return nextNode.getLabel()
 
     def getRoot(self):
         return self.root
 
-################################Fns Usadas################################ 
+################################ Fns Usadas ################################ 
 def findSubsets(valores, labels, atributeIndex):
     d= {}
 
@@ -248,23 +260,19 @@ def countZeros(entropias):
     
     return zeros
 
-def newDataset(f, oldX, oldY, toRemove, atributeIndex): #calcular nova subset, as atributes e as suas labels 
-    f.pop(atributeIndex)
+def newDataset(f, X, y, toRemove, atributeIndex): #calcular nova subset, as atributes e as suas labels 
+    f.pop(atributeIndex) #remover a atribute 
 
-    toPop= []
-    for xIndex in range(0, len(oldX)):
-        currentX= oldX[xIndex]
-        if(currentX[atributeIndex] in toRemove):
-            toPop.insert(0, xIndex) #adiciona o index ao inicio da lista 
-            #assim a lista de coordenadas fica em ordem decrescente
+    newX= []
+    for xIndex in range(len(X)-1, -1, -1): #vai ir em ordem decrescente para os indexes baterem certo
+        currentLine= X[xIndex]
+        if(currentLine[atributeIndex] in toRemove): #se e para remover a linha
+            y.pop(xIndex) #tira a label associada a linha
+        else: #se for para manter a linha 
+            currentLine.pop(atributeIndex)
+            newX.insert(0, currentLine) #para ficar sempre a frente das anteriores
 
-    newX= oldX
-    newY= oldY
-    for p in toPop:
-        newX.pop(p)
-        newY.pop(p)
-
-    return [f, newX, newY]
+    return [f, newX, y]
 
 def thresholdReached(labels, threshold):
     fruit= 0
