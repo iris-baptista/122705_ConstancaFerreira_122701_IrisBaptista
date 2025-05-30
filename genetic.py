@@ -11,10 +11,10 @@ def tournamentSelection(population, ff):
     possibleP1= population[random.randint(0, len(population)-1)]
     
     if(ff(possibleP1) > ff(p1)): #se o outro pai gerado tiver uma fitness melhor q o primeiro gerado 
-        p1= possibleP1
+        p1= possibleP1 #escolher o segundo 
 
     p2= None #initialzar p2
-    while(p2 == None):
+    while(p2 == None): #continua a gerar ate gerar um pai dif do q p1
         p= population[random.randint(0, len(population)-1)]
         possibleP= population[random.randint(0, len(population)-1)]
 
@@ -22,13 +22,13 @@ def tournamentSelection(population, ff):
             p= possibleP
 
         if(p != p1): #se o pai escolhido nao e igual ao p1
-            p2= p
+            p2= p #escolhe o gerado 
 
     return p1, p2
 
 def onePointCrossOver(p1, p2, ff): #devolve um filho!
     midPoint= round((len(p1)+1)/2)
-    child= p1[0:midPoint]+p2[midPoint:] #deviamos escolher um?
+    child= p1[0:midPoint]+p2[midPoint:] 
     possibleChild= p2[0:midPoint]+p1[midPoint:]
 
     if(ff(possibleChild) > ff(child)): #se o outro filho gerado tiver uma fitness melhor q o primeiro gerado 
@@ -40,7 +40,7 @@ def mutate(child): #mutate um bit
     index= random.randint(0, len(child)-1) #escolhe um index 
     valorAntigo= child[index]
 
-    alteracao= random.uniform(0, 1) #gera um novo valor? Ou devia manipular o antigo???
+    alteracao= random.uniform(0, 1) #vai gerar um novo valor baseado na alteracao
     if(valorAntigo > 0):
         novoValor= valorAntigo - alteracao
     else:
@@ -60,7 +60,7 @@ def sortPop(pop, ff):
         swapped= False
 
         for j in range(i, len(pop)-1):
-            if(pop[j] < pop[j+1]): #por os maiores a frente
+            if(ff(pop[j]) < ff(pop[j+1])): #por os maiores a frente
                 temp= pop[j]
                 pop[j]= pop[j+1]
                 pop[j+1]= temp
@@ -70,7 +70,6 @@ def sortPop(pop, ff):
         if(swapped == False): #se nao trocou nada, ja esta ordenado 
             return pop
 
-#double check parameters in main code broskie 
 def genetic_algorithm(individual_size, population_size, fitness_function, target_fitness, generations, elite_rate=0.2, mutation_rate=0.05):
     population = generate_population(individual_size, population_size) #population initial
     best_individual = (None, 0) #initializar population
@@ -78,7 +77,7 @@ def genetic_algorithm(individual_size, population_size, fitness_function, target
     generated= 0 
     while(target_fitness > best_individual[1] and generated != generations): #while condicoes de paragem nao sao met  
         for i in population:  #avaliar todos os individuals dados na populacao
-            fitness= fitness_function(i) #avaliar com fitness function (falta um seed?)
+            fitness= fitness_function(i) #avaliar com fitness function
             
             if(fitness > best_individual[1]): #vai atualizando o best_individual se tem fitness menor
                 best_individual= (i, fitness)

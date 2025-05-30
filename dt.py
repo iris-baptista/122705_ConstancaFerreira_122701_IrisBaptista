@@ -11,7 +11,7 @@ class DecisionNode():
     conditionM= []
 
     def __init__(self, atributeId):
-        self.atribute= atributeId #Se calhar mudar isto para o string?
+        self.atribute= atributeId #para identificar a atribute q representa 
 
     def setLeft(self, node, condition):
         self.saidaL= node
@@ -58,17 +58,17 @@ class DecisionNode():
 
 class ConclusionNode():
     def __init__(self, l): 
-        self.label= l
+        self.label= l #1 para fruit, -1 para nao fruit
 
     def getLabel(self):
-        return self.label
+        return self.label 
     
 ################################ Class Principal ################################
 class DecisionTree:
     root= None
 
     #fazemos os branches 
-    #usa a entropia e a ig 
+    #usa a entropia e a information gain  
     #deve ter recursao (da para fazer mesmo sendo um construtor)
     def __init__(self, X, y, atributes, threshold=1.0, max_depth=50): 
         entropiaDataset= entropiaInitial(y)
@@ -77,90 +77,82 @@ class DecisionTree:
             dados= findSubsets(X, y, aIndex) 
 
             entropias= {}
-            for subset in dados: #subset e a chave nao o valor associado
+            for subset in dados: #subset e a chave do dicionario
                 entropias[subset]= entropia(dados.get(subset))
             
             currentIG= [ig(entropiaDataset, entropias), aIndex, entropias]
-            if(currentIG[0] > biggestIG[0]):
-                biggestIG= currentIG
+            if(currentIG[0] > biggestIG[0]): #se o IG calculado for maior do q o guardado
+                biggestIG= currentIG #atualizar maior ig
 
         self.root= DecisionNode(biggestIG[1])
         #print("Root")
-        zeros= countZeros(biggestIG[2]) 
 
-        if(len(zeros) >= 1): #se temos mais q 1 zero
+        zeros= countZeros(biggestIG[2]) 
+        if(len(zeros) >= 1): #se temos mais q 1 caso de entropia ser zero
             fruit= []
             nFruit= []
-
             toRemove= []
-            for chave, valor in zeros.items():
-                toRemove.append(chave)
 
-                if(valor[2] == 1):
+            for chave, valor in zeros.items():
+                toRemove.append(chave) #guardar todos os valores das atributes q vao dar a um no de conclusao 
+
+                if(valor[2] == 1): #se a label for 1 
                     fruit.append(chave)
-                else:
+                else: #se a label for -1
                     nFruit.append(chave)
             
-            #vamos ter ou 1 ou 2 folhas
-            if(len(fruit) > 0):
+            #vamos ter ou 1 ou 2 folhas como ha 1+ casos de ser 0 (e so pode ser fruit/nFruit)
+            if(len(fruit) > 0): #se uma das folhas classifica como 1 (fruta)
                 self.root.setLeft(ConclusionNode(1), fruit)
                 #print("Left is fruit with conditions ", fruit)
                 
                 if(len(nFruit) > 0): #se tb tem uma segunda folha para -1
                     self.root.setMiddle(ConclusionNode(-1), nFruit)
                     #print("Middle is not fruit with conditions ", nFruit)
-            else: #se a conclusao nao e 1, tem de ser -1
+            else: #se a conclusao nao e 1, tem de ser -1 
                 self.root.setLeft(ConclusionNode(-1), nFruit)
                 #print("Left is not fruit with conditions ", nFruit)
-        else: #se temos 0 casos de entropia ser 0 (so adicionamos )
-            smallestE= [100, None, None]
+        else: #se temos 0 casos de entropia ser 0 (so adicionamos um no basiado na menor entropia)
+            smallestE= [100, None, None] #initializar para encontrar a menor entropia
             for chave, valor in biggestIG[2].items(): #iterar sobre as entropias 
-                if(valor[0] < smallestE[0]):
-                    smallestE= [valor[0], chave, valor[2]]
+                if(valor[0] < smallestE[0]): #se encontramos uma entropia menor 
+                    smallestE= [valor[0], chave, valor[2]] #atualizar menor entropia  
 
             toRemove= smallestE[1]
             #print("Left is fruit= ", smallestE[2], " para ", smallestE[1])
             self.root.setLeft(ConclusionNode(smallestE[2]), smallestE[1]) #adicionar o no de conclusion
 
-        #passa variaveis por (object) reference entao altera o valor de atributes, X, e y permanentemente
         atributes, X, y= newDataset(atributes, X, y, toRemove, biggestIG[1])
 
-        resto= []
+        resto= [] #valores q vao dar ao ramo restante 
         for chave in biggestIG[2]:
             if(chave not in toRemove):
                 resto.append(chave)
 
         #check condicoes de paragem 
-        if(len(atributes) == 0 or thresholdReached(y, threshold) or max_depth-1 == 0): #se nao ha proximo atribute ou se ja antigio o threshold 
-            divisoes= spreadValues(entropias, resto) 
+        if(len(atributes) == 0 or thresholdReached(y, threshold) or max_depth-1 == 0): #se nao ha proximo atribute ou se ja antigio o threshold ou se a max height foi antigida 
+            divisoes= spreadValues(entropias, resto) #dividir os valores restantes entre fruit e nFruit
 
             labelLeft= self.root.getLeft().getLabel()
             mid= self.root.getMiddle()
 
-            if(labelLeft == 1):
-                #print("added to left ", divisoes[0])
-                self.root.addConditionsLeft(divisoes[0])
+            if(labelLeft == 1): #se a da esquerda classificar fruta
+                self.root.addConditionsLeft(divisoes[0]) #adicionar frutas as condicoes
 
-                #mid tem de ter label -1
-                if(mid == None):
-                    #print("set to middle ", divisoes[1], " with -1")
-                    self.root.setMiddle(ConclusionNode(-1), divisoes[1])
-                else: 
-                    #print("added to middle ", divisoes[1])
+                #mid tem de ter label -1 (a q resta)
+                if(mid == None): #se ainda nao criou middle no 
+                    self.root.setMiddle(ConclusionNode(-1), divisoes[1]) #criar no do meio 
+                else: #se ja existe, adiciona os nao fruit as condicoes 
                     self.root.addConditionsMiddle(divisoes[1])
-            else: #se for -1
-                #print("added to left ", divisoes[1])
+            else: #se left for -1
                 self.root.addConditionsLeft(divisoes[1])
 
                 #mid tem de ter label 1
                 if(mid == None):
-                    #print("set to middle ", divisoes[0], " with 1")
                     self.root.setMiddle(ConclusionNode(1), divisoes[0])
                 else: 
-                    #print("added to middle ", divisoes[0])
                     self.root.addConditionsMiddle(divisoes[0])
-        else: #vai criar uma arvore q vai usar a folha deste como raiz
-            #print("resto ", resto)
+        else: #se continua a recursao vai criar uma arvore nova. A raiz dessa nova vai ser o no da direita
             self.root.setRight(DecisionTree(X, y, atributes, threshold, max_depth-1).getRoot(), resto) 
     
     #x e um objeto novo para classificarmos 
@@ -168,7 +160,7 @@ class DecisionTree:
         nextNode= self.root
         while(nextNode.__class__ != ConclusionNode):
             index= nextNode.getAtributeIndex()
-            value= x.pop(index) #pop para os proximos indexes ficarem corretos 
+            value= x.pop(index) #pop para os proximos indexes baterem certo  
             
             nextNode= nextNode.getSaida(value)
             
@@ -178,8 +170,9 @@ class DecisionTree:
         return self.root
 
 ################################ Fns Usadas ################################ 
+#calcular primeira coluna das tabelas 
 def findSubsets(valores, labels, atributeIndex):
-    d= {}
+    d= {} #dicionario vai ter {atribute: [numFruta, numNaoFruta]}
 
     for vIndex in range(0, len(valores)):
         valorAtual= valores[vIndex][atributeIndex]
@@ -195,7 +188,8 @@ def findSubsets(valores, labels, atributeIndex):
 
     return d
 
-def entropia(numeroOcorrencias): 
+#calcular entropia 
+def entropia(numeroOcorrencias): #numeroOcorrencias= [numFruit, numNaoFruit]
     total= numeroOcorrencias[0]+numeroOcorrencias[1]
     probFruta= (float) (numeroOcorrencias[0]/total)
     if(probFruta == 0):
@@ -217,6 +211,7 @@ def entropia(numeroOcorrencias):
 
     return [round(e, 3), total, label] #devolve o valor da entropia, o numero de frutas na subset, e a label atribuida 
 
+#calcula a entropia da dataset completa 
 def entropiaInitial(labels):
     fruta= 0
     nFruta= 0
@@ -242,6 +237,7 @@ def entropiaInitial(labels):
     e= -((probFruta*logFruta) + (probNaoFruta*logNaoFruta))
     return [round(e, 3), total]
 
+#calcula information gain 
 def ig(entropiaInitial, entropias): 
     soma= 0
     for e in entropias.values():
@@ -250,8 +246,9 @@ def ig(entropiaInitial, entropias):
     mediaPonderada= 1/entropiaInitial[1] * (soma)
     ig= entropiaInitial[0] - mediaPonderada
 
-    return round(ig, 3)
+    return round(ig, 3) #resultado dado com 3 valores decimais
 
+#conta numero de entropias homogeneas 
 def countZeros(entropias):
     zeros= {}
     for chave, valor in entropias.items():
@@ -260,6 +257,7 @@ def countZeros(entropias):
     
     return zeros
 
+#devolve a nova dataset sem os valores classificados, e sem o atribute utilizado
 def newDataset(f, X, y, toRemove, atributeIndex): #calcular nova subset, as atributes e as suas labels 
     f.pop(atributeIndex) #remover a atribute 
 
@@ -274,6 +272,7 @@ def newDataset(f, X, y, toRemove, atributeIndex): #calcular nova subset, as atri
 
     return [f, newX, y]
 
+#verifica se o threshold ja foi antigido 
 def thresholdReached(labels, threshold):
     fruit= 0
     nFruit= 0
@@ -291,6 +290,7 @@ def thresholdReached(labels, threshold):
     else:
         return False
 
+#divide os valores de resto entre fruit e nFruit
 def spreadValues(entropias, resto):
     divisoes= [[], []]
 
@@ -301,7 +301,7 @@ def spreadValues(entropias, resto):
             else: #se a label for -1
                 divisoes[1].append(chave)
 
-    return divisoes #[1, -1]
+    return divisoes #[fruit, nFruit]
 
 def train_decision_tree(X, y, a):
     threshold= 0.75
